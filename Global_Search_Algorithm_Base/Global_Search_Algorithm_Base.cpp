@@ -21,7 +21,9 @@ protected:
 
 public:
 	long double function(long double x) {
-		return x * x - cos(2 * x);
+		//return 3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x);
+		//return x * sin(x * 2 + 2) - cos(2 * x);
+		return sin(x * 20 + 2) / x - 5 * x * cos(3 * x + 10);
 	}
 
 	long double calculate_minimum(int count_of_tests = 200) {
@@ -33,7 +35,7 @@ public:
 			long double value = calculate_expected_const();
 			calculate_haracteristecs(value);
 			int interval = choice_best_interval();
-			if (points[interval].first - points[interval-1].first < errorX)
+			if (points[interval].first - points[interval-1].first < errorX*(borders.second-borders.first))
 				break;
 			long double new_pos = calculate_position_of_point(interval, value);
 			test_point(new_pos);
@@ -80,7 +82,7 @@ private:
 			value = max(value,
 			abs((points[i].second - points[i-1].second) / (points[i].first - points[i-1].first)));
 		}
-		if (value < 1e-8) 
+		if (value == 0) 
 			value = 1;
 		else
 			value *= parametr;
@@ -121,7 +123,7 @@ private:
 int main()
 {	
 	//GSA(long double _parametr = 2, long double _errorX = 0.001, long double leftborder = 0, long double rightborder = 1)
-	GSA tmp(2,0.01,-1.2,2);
+	GSA tmp(4.5, 0.001, 0.25, 2.5);
 	cout << tmp.calculate_minimum()<<"\n";
 
 }
