@@ -5,11 +5,20 @@
 
 using namespace std;
 
+struct test_point {
+	long double X, Y;
+	test_point(long double _X, long double _Y) : X(_X), Y(_Y) {}
+	bool operator<(const test_point& a) {
+		if (X == a.X)
+			return Y < a.Y;
+		return X < a.X;
+	}
+};
 
 class GSA
 {
 protected:
-	vector < pair <long double, long double> > points;
+	vector < test_point > points;
 	int size;
 	vector <long double> characteristics;
 	long double parametr;
@@ -35,7 +44,7 @@ public:
 			long double value = calculate_expected_const();
 			calculate_haracteristecs(value);
 			int interval = choice_best_interval();
-			if (points[interval].first - points[interval-1].first < errorX*(borders.second-borders.first))
+			if (points[interval].X - points[interval-1].X < errorX*(borders.second-borders.first))
 				break;
 			long double new_pos = calculate_position_of_point(interval, value);
 			test_point(new_pos);
@@ -43,7 +52,7 @@ public:
 		cout << "number of operations : " << number_of_tests  << ", result = " << result << "\n";
 		/*numeration_and_sort();
 		for (auto x : points)
-			cout << "X=" << x.first << ", Y=" << x.second << "\n";*/
+			cout << "X=" << x.X << ", Y=" << x.Y << "\n";*/
 		cout << endl;
 		return result;
 	}
@@ -80,7 +89,7 @@ private:
 		long double value = 0;
 		for (int i = 1; i < size; i++) {
 			value = max(value,
-			abs((points[i].second - points[i-1].second) / (points[i].first - points[i-1].first)));
+			abs((points[i].Y - points[i-1].Y) / (points[i].X - points[i-1].X)));
 		}
 		if (value == 0) 
 			value = 1;
@@ -93,9 +102,9 @@ private:
 		characteristics.resize(size);
 		characteristics[0] = -1;
 		for (int i = 1; i < size; i++) {
-			long double diffX = points[i].first-points[i-1].first;
-			long double diffY = points[i].second-points[i-1].second;
-			long double sumY = points[i].second+points[i-1].second;
+			long double diffX = points[i].X-points[i-1].X;
+			long double diffY = points[i].Y-points[i-1].Y;
+			long double sumY = points[i].Y+points[i-1].Y;
 			long double R = value * diffX+diffY*diffY/(value*diffX)-2*sumY;
 			characteristics[i] = R;
 		}
@@ -114,8 +123,8 @@ private:
 	}
 
 	long double calculate_position_of_point(int interval,long double value) {
-		return (points[interval].first + points[interval-1].first) / 2 -
-			(points[interval].second - points[interval-1].second) / (2 * value);
+		return (points[interval].X + points[interval-1].X) / 2 -
+			(points[interval].Y - points[interval-1].Y) / (2 * value);
 	}
 	
 };
