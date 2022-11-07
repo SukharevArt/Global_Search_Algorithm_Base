@@ -42,28 +42,38 @@ public:
 		//return sin(x * 20 + 2) / x - 5 * x * cos(3 * x + 10);
 	}
 
-	long double calculate_minimum(int count_of_tests = 200) {
+	long double calculate_minimum(int count_of_tests, long double Xmin, long double error) {
 		result = UINT64_MAX;
 		number_of_tests = 0;
 		base_calculates();
-		for ( ;number_of_tests < count_of_tests; ){
+		for (; number_of_tests < count_of_tests; ) {
 			numeration_and_sort();
 			long double value = calculate_expected_const();
 			calculate_haracteristecs(value);
 			list<tpoint>::iterator interval = choice_best_interval();
 			list<tpoint>::iterator prev = std::prev(interval);
 
-			if ((*interval).X - (*prev).X < errorX*(borders.second-borders.first))
+			if ((*interval).X - (*prev).X < errorX * (borders.second - borders.first))
 				break;
 			long double new_pos = calculate_position_of_point(interval, value);
-			test_point(new_pos,interval);
+			test_point(new_pos, interval);
 		}
-		cout << "number of operations : " << number_of_tests  << ", result = " << result << "\n";
+		//cout << "number of operations : " << number_of_tests << ", result = " << result << "\n";
 		/*numeration_and_sort();
 		for (auto x : points)
 			cout << "X=" << x.X << ", Y=" << x.Y << "\n";*/
-		cout << endl;
-		return result;
+		//cout << endl;
+		if ((memory_points.back().X - Xmin) >= error) {
+			return -1;
+		}
+		int num = -1;
+		for (int i = 0; i < size;i++) {
+			if ((memory_points[i].X - Xmin) >= error) {
+				num = i + 1;
+				break;
+			}
+		}
+		return num;
 	}
 
 	GSA(long double _parametr = 2, long double _errorX = 0.001, long double leftborder = 0, long double rightborder = 1)
@@ -154,6 +164,8 @@ int main()
 {	
 	//GSA(long double _parametr = 2, long double _errorX = 0.001, long double leftborder = 0, long double rightborder = 1)
 	GSA tmp(2, 0.001, -1.2, 2.0);
-	cout << tmp.calculate_minimum()<<"\n";
+	long double Xmin = 0;
+	long double error = 0.001;
+	cout << tmp.calculate_minimum(300,Xmin,error)<<"\n";
 
 }
