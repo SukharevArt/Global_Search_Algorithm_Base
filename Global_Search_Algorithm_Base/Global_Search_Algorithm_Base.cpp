@@ -2,23 +2,30 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <list>
+#include <iterator>
 
 using namespace std;
 
-struct test_point {
+struct tpoint {
 	long double X, Y;
-	test_point(long double _X, long double _Y) : X(_X), Y(_Y) {}
-	bool operator<(const test_point& a) {
+	tpoint(long double _X, long double _Y) : X(_X), Y(_Y) {}
+	bool operator<(const tpoint& a) {
 		if (X == a.X)
 			return Y < a.Y;
 		return X < a.X;
+	}
+	friend ostream& operator<<(ostream& fout, const tpoint& tmp) {
+		fout << "X =" << tmp.X << " Y =" << tmp.Y;
+		return fout;
 	}
 };
 
 class GSA
 {
 protected:
-	vector < test_point > points;
+	vector < tpoint > memory_points;
+	list < tpoint > points;
 	int size;
 	vector <long double> characteristics;
 	long double parametr;
@@ -30,9 +37,9 @@ protected:
 
 public:
 	long double function(long double x) {
-		//return 3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x);
+		return 3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x);
 		//return x * sin(x * 2 + 2) - cos(2 * x);
-		return sin(x * 20 + 2) / x - 5 * x * cos(3 * x + 10);
+		//return sin(x * 20 + 2) / x - 5 * x * cos(3 * x + 10);
 	}
 
 	long double calculate_minimum(int count_of_tests = 200) {
@@ -43,11 +50,13 @@ public:
 			numeration_and_sort();
 			long double value = calculate_expected_const();
 			calculate_haracteristecs(value);
-			int interval = choice_best_interval();
-			if (points[interval].X - points[interval-1].X < errorX*(borders.second-borders.first))
+			list<tpoint>::iterator interval = choice_best_interval();
+			list<tpoint>::iterator prev = std::prev(interval);
+
+			if ((*interval).X - (*prev).X < errorX*(borders.second-borders.first))
 				break;
 			long double new_pos = calculate_position_of_point(interval, value);
-			test_point(new_pos);
+			test_point(new_pos,interval);
 		}
 		cout << "number of operations : " << number_of_tests  << ", result = " << result << "\n";
 		/*numeration_and_sort();
@@ -65,31 +74,37 @@ public:
 	}
 
 private:
-	void test_point(long double X) {
+	void test_point(long double X,list<tpoint>::iterator nxt) {
 		long double Y = function(X);
-		points.push_back({ X, Y});
-		result = min(result, Y);
 		size++;
 		number_of_tests++;
+		result = min(result, Y);
 		cout << "test: X = " << X << ", Y = " << Y << "\n";
+		points.insert(nxt, tpoint(X, Y));
+		memory_points.push_back(tpoint(X, Y));
+		
 	}
 
 	void base_calculates() {
 		size = 0;
 		points.clear();
-		test_point(borders.first);
-		test_point(borders.second);
+		test_point(borders.first,points.end());
+		test_point(borders.second, points.end());
+		//sort(points.begin(), points.end());
 	}
 	
 	void numeration_and_sort() {
-		sort(points.begin(), points.end());
+		//sort(points.begin(), points.end());
 	}
 	
 	long double calculate_expected_const() {
 		long double value = 0;
-		for (int i = 1; i < size; i++) {
+		list<tpoint>::iterator it = points.begin();
+		for ( int i = 0; i < size - 1; i++, it++) {
+			auto tmp = *it;
+			auto nxt = *next(it);
 			value = max(value,
-			abs((points[i].Y - points[i-1].Y) / (points[i].X - points[i-1].X)));
+			abs((nxt.Y - tmp.Y) / (nxt.X - tmp.X)));
 		}
 		if (value == 0) 
 			value = 1;
@@ -101,30 +116,36 @@ private:
 	void calculate_haracteristecs(long double value) {
 		characteristics.resize(size);
 		characteristics[0] = -1;
-		for (int i = 1; i < size; i++) {
-			long double diffX = points[i].X-points[i-1].X;
-			long double diffY = points[i].Y-points[i-1].Y;
-			long double sumY = points[i].Y+points[i-1].Y;
+		list<tpoint>::iterator it = points.begin();
+		for ( int i = 1; i < size; i++, it++) {
+			auto tmp = *it;
+			auto nxt = *next(it);
+			long double diffX = nxt.X-tmp.X;
+			long double diffY = nxt.Y-tmp.Y;
+			long double sumY = nxt.Y+tmp.Y;
 			long double R = value * diffX+diffY*diffY/(value*diffX)-2*sumY;
 			characteristics[i] = R;
 		}
 	}
 	
-	int choice_best_interval() {
+	list<tpoint>::iterator choice_best_interval() {
 		long double Max = characteristics[1];
-		int interval = 1;
-		for (int i = 2; i < size; i++) {
+		auto it = next(points.begin());
+		auto interval = it;
+		it++;
+		for (int i = 2; i < size; i++,it++) {
 			if (characteristics[i] > Max) {
 				Max = characteristics[i];
-				interval = i;
+				interval = it;
 			}
 		}
 		return interval;
 	}
 
-	long double calculate_position_of_point(int interval,long double value) {
-		return (points[interval].X + points[interval-1].X) / 2 -
-			(points[interval].Y - points[interval-1].Y) / (2 * value);
+	long double calculate_position_of_point(list<tpoint>::iterator interval,long double value) {
+		list<tpoint>::iterator prev = std::prev(interval);
+		return ((*interval).X + (*prev).X) / 2 -
+			((*interval).Y - (*prev).Y) / (2 * value);
 	}
 	
 };
@@ -132,7 +153,7 @@ private:
 int main()
 {	
 	//GSA(long double _parametr = 2, long double _errorX = 0.001, long double leftborder = 0, long double rightborder = 1)
-	GSA tmp(4.5, 0.001, 0.25, 2.5);
+	GSA tmp(2, 0.001, -1.2, 2.0);
 	cout << tmp.calculate_minimum()<<"\n";
 
 }
