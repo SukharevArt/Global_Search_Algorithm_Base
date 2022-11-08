@@ -15,8 +15,8 @@
 using namespace std;
 
 struct tpoint {
-	long double X, Y;
-	tpoint(long double _X, long double _Y) : X(_X), Y(_Y) {}
+	double X, Y;
+	tpoint(double _X, double _Y) : X(_X), Y(_Y) {}
 	bool operator<(const tpoint& a) {
 		if (X == a.X)
 			return Y < a.Y;
@@ -34,35 +34,35 @@ protected:
 	vector < tpoint > memory_points;
 	list < tpoint > points;
 	int size;
-	vector <long double> characteristics;
-	long double parametr;
-	pair <long double, long double> borders;
-	long double errorX;
-	long double result;
+	vector <double> characteristics;
+	double parametr;
+	pair <double, double> borders;
+	double errorX;
+	double result;
 
 	int number_of_tests;
 
 public:
-	long double function(long double x) {
+	double function(double x) {
 		return 3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x);
 		//return x * sin(x * 2 + 2) - cos(2 * x);
 		//return sin(x * 20 + 2) / x - 5 * x * cos(3 * x + 10);
 	}
 
-	long double calculate_minimum(int count_of_tests, long double Xmin, long double error) {
+	double calculate_minimum(int count_of_tests, double Xmin, double error) {
 		result = UINT64_MAX;
 		number_of_tests = 0;
 		base_calculates();
 		for (; number_of_tests < count_of_tests; ) {
 			numeration_and_sort();
-			long double value = calculate_expected_const();
+			double value = calculate_expected_const();
 			calculate_haracteristecs(value);
 			list<tpoint>::iterator interval = choice_best_interval();
 			list<tpoint>::iterator prev = std::prev(interval);
 
 			if ((*interval).X - (*prev).X < errorX * (borders.second - borders.first))
 				break;
-			long double new_pos = calculate_position_of_point(interval, value);
+			double new_pos = calculate_position_of_point(interval, value);
 			test_point(new_pos, interval);
 		}
 		//cout << "number of operations : " << number_of_tests << ", result = " << result << "\n";
@@ -83,16 +83,16 @@ public:
 		return num;
 	}
 
-	GSA(long double _parametr = 2, long double _errorX = 0.001, long double leftborder = 0, long double rightborder = 1)
+	GSA(double _parametr = 2, double _errorX = 0.001, double leftborder = 0, double rightborder = 1)
 		:parametr(_parametr), errorX(_errorX), borders({ leftborder,rightborder }) {
 		result = UINT64_MAX;
 		size = 0;
 		number_of_tests = 0;
 	}
 
-private:
-	void test_point(long double X,list<tpoint>::iterator nxt) {
-		long double Y = function(X);
+protected:
+	void test_point(double X,list<tpoint>::iterator nxt) {
+		double Y = function(X);
 		size++;
 		number_of_tests++;
 		result = min(result, Y);
@@ -114,8 +114,8 @@ private:
 		//sort(points.begin(), points.end());
 	}
 	
-	long double calculate_expected_const() {
-		long double value = 0;
+	double calculate_expected_const() {
+		double value = 0;
 		list<tpoint>::iterator it = points.begin();
 		for ( int i = 0; i < size - 1; i++, it++) {
 			auto tmp = *it;
@@ -130,23 +130,23 @@ private:
 		return value;
 	}
 	
-	void calculate_haracteristecs(long double value) {
+	void calculate_haracteristecs(double value) {
 		characteristics.resize(size);
 		characteristics[0] = -1;
 		list<tpoint>::iterator it = points.begin();
 		for ( int i = 1; i < size; i++, it++) {
 			auto tmp = *it;
 			auto nxt = *next(it);
-			long double diffX = nxt.X-tmp.X;
-			long double diffY = nxt.Y-tmp.Y;
-			long double sumY = nxt.Y+tmp.Y;
-			long double R = value * diffX+diffY*diffY/(value*diffX)-2*sumY;
+			double diffX = nxt.X-tmp.X;
+			double diffY = nxt.Y-tmp.Y;
+			double sumY = nxt.Y+tmp.Y;
+			double R = value * diffX+diffY*diffY/(value*diffX)-2*sumY;
 			characteristics[i] = R;
 		}
 	}
 	
 	list<tpoint>::iterator choice_best_interval() {
-		long double Max = characteristics[1];
+		double Max = characteristics[1];
 		auto it = next(points.begin());
 		auto interval = it;
 		it++;
@@ -159,7 +159,7 @@ private:
 		return interval;
 	}
 
-	long double calculate_position_of_point(list<tpoint>::iterator interval,long double value) {
+	double calculate_position_of_point(list<tpoint>::iterator interval,double value) {
 		list<tpoint>::iterator prev = std::prev(interval);
 		return ((*interval).X + (*prev).X) / 2 -
 			((*interval).Y - (*prev).Y) / (2 * value);
@@ -167,26 +167,57 @@ private:
 	
 };
 
+class GSA_func_Hill : public GSA {
+public:
+	static THillProblemFamily testHill;
+protected:
+	int num_test;
+public:
+	GSA_func_Hill(double _parametr = 2, double _errorX = 0.001, double leftborder = 0, double rightborder = 1,int _num_test = 0)
+		:GSA(_parametr,_errorX,leftborder,rightborder) {
+		num_test = _num_test;
+
+	}
+protected:
+	double function(double x) {
+		return testHill[num_test]->ComputeFunction({x});
+	}
+};
+THillProblemFamily GSA_func_Hill::testHill;
+
+class GSA_func_Shekel : public GSA {
+public:
+	static TShekelProblemFamily testShekel;
+protected:
+	int num_test;
+public:
+	GSA_func_Shekel(double _parametr = 2, double _errorX = 0.001, double leftborder = 0, double rightborder = 1,int _num_test = 0)
+		:GSA(_parametr,_errorX,leftborder,rightborder) {
+		num_test = _num_test;
+
+	}
+protected:
+	double function(double x) {
+		return testShekel[num_test]->ComputeFunction({x});
+	}
+};
+TShekelProblemFamily GSA_func_Shekel::testShekel;
+
+
 int main()
 {	
-	//GSA(long double _parametr = 2, long double _errorX = 0.001, long double leftborder = 0, long double rightborder = 1)
-	GSA tmp(2, 0.001, -1.2, 2.0);
-	THillProblemFamily testHill; 
+	//GSA(double _parametr = 2, double _errorX = 0.001, double leftborder = 0, double rightborder = 1)
+	//GSA tmp(2, 0.001, -1.2, 2.0);
+	//THillProblemFamily testHill; 
 	int n = 10;
 	for (int i = 0; i < n; i++)
 		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
-		testHill[i]->GetOptimumValue() << std::endl;
+		GSA_func_Hill::testHill[i]->GetOptimumValue() << std::endl;
 	for (int i = 0; i < n; i++)
 		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
-		testHill[i]->GetMaxValue() << std::endl;
-	for (int i = 0; i < n; i++)
-		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
-		testHill[i]->GetOptimumPoint()[0] << std::endl;
-	for (int i = 0; i < n; i++)
-		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
-		testHill[i]->ComputeFunction(testHill[i]->GetMaxPoint()) << std::endl;
-	long double Xmin = 0;
-	long double error = 0.001;
+		GSA_func_Hill::testHill[i]->ComputeFunction(GSA_func_Hill::testHill[i]->GetOptimumPoint()) << std::endl;
+	//double Xmin = 0;
+	//double error = 0.001;
 	//cout << tmp.calculate_minimum(300,Xmin,error)<<"\n";
 
 }
