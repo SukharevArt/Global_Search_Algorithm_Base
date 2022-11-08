@@ -1,9 +1,10 @@
-﻿
+﻿#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <list>
 #include <iterator>
+#include <assert.h>
 
 
 #include "../sample_src/Hill/HillProblem.hpp"
@@ -16,11 +17,16 @@ using namespace std;
 
 struct tpoint {
 	double X, Y;
-	tpoint(double _X, double _Y) : X(_X), Y(_Y) {}
+	tpoint(double _X = 0, double _Y = double(INT32_MAX)) : X(_X), Y(_Y) {}
 	bool operator<(const tpoint& a) {
 		if (X == a.X)
 			return Y < a.Y;
 		return X < a.X;
+	}
+	tpoint& operator=(const int _Y) {
+		X = 0;
+		Y = double(_Y);
+		return *this;
 	}
 	friend ostream& operator<<(ostream& fout, const tpoint& tmp) {
 		fout << "X =" << tmp.X << " Y =" << tmp.Y;
@@ -38,19 +44,19 @@ protected:
 	double parametr;
 	pair <double, double> borders;
 	double errorX;
-	double result;
+	tpoint result;
 
 	int number_of_tests;
 
 public:
-	double function(double x) {
+	virtual double function(double x) {
 		return 3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x);
 		//return x * sin(x * 2 + 2) - cos(2 * x);
 		//return sin(x * 20 + 2) / x - 5 * x * cos(3 * x + 10);
 	}
 
 	double calculate_minimum(int count_of_tests, double Xmin, double error) {
-		result = UINT64_MAX;
+		result = UINT32_MAX;
 		number_of_tests = 0;
 		base_calculates();
 		for (; number_of_tests < count_of_tests; ) {
@@ -65,17 +71,13 @@ public:
 			double new_pos = calculate_position_of_point(interval, value);
 			test_point(new_pos, interval);
 		}
-		//cout << "number of operations : " << number_of_tests << ", result = " << result << "\n";
-		/*numeration_and_sort();
-		for (auto x : points)
-			cout << "X=" << x.X << ", Y=" << x.Y << "\n";*/
-		//cout << endl;
-		if ((memory_points.back().X - Xmin) >= error) {
+		
+		if (abs(result.X - Xmin) >= error) {
 			return -1;
 		}
 		int num = -1;
-		for (int i = 0; i < size;i++) {
-			if ((memory_points[i].X - Xmin) >= error) {
+		for (int i = 0; i < size; i++) {
+			if (abs(memory_points[i].X - Xmin) < error) {
 				num = i + 1;
 				break;
 			}
@@ -85,7 +87,7 @@ public:
 
 	GSA(double _parametr = 2, double _errorX = 0.001, double leftborder = 0, double rightborder = 1)
 		:parametr(_parametr), errorX(_errorX), borders({ leftborder,rightborder }) {
-		result = UINT64_MAX;
+		result = UINT32_MAX;
 		size = 0;
 		number_of_tests = 0;
 	}
@@ -95,8 +97,9 @@ protected:
 		double Y = function(X);
 		size++;
 		number_of_tests++;
-		result = min(result, Y);
-		cout << "test: X = " << X << ", Y = " << Y << "\n";
+		if(result.Y>Y)
+			result = tpoint(X,Y);
+		//cout << "test: X = " << X << ", Y = " << Y << "\n";
 		points.insert(nxt, tpoint(X, Y));
 		memory_points.push_back(tpoint(X, Y));
 		
@@ -180,7 +183,8 @@ public:
 	}
 protected:
 	double function(double x) {
-		return testHill[num_test]->ComputeFunction({x});
+		double y = testHill[num_test]->ComputeFunction({x});
+		return y;
 	}
 };
 THillProblemFamily GSA_func_Hill::testHill;
@@ -203,21 +207,47 @@ protected:
 };
 TShekelProblemFamily GSA_func_Shekel::testShekel;
 
-
 int main()
 {	
-	//GSA(double _parametr = 2, double _errorX = 0.001, double leftborder = 0, double rightborder = 1)
-	//GSA tmp(2, 0.001, -1.2, 2.0);
-	//THillProblemFamily testHill; 
-	int n = 10;
-	for (int i = 0; i < n; i++)
-		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
-		GSA_func_Hill::testHill[i]->GetOptimumValue() << std::endl;
-	for (int i = 0; i < n; i++)
-		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
-		GSA_func_Hill::testHill[i]->ComputeFunction(GSA_func_Hill::testHill[i]->GetOptimumPoint()) << std::endl;
-	//double Xmin = 0;
-	//double error = 0.001;
-	//cout << tmp.calculate_minimum(300,Xmin,error)<<"\n";
+
+	freopen("result.xls", "w", stdout);
+	ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+	int n = 250;
+	int m = 1000;
+	vector<vector<int >> mem;
+	double step=0.3;
+	double left = 1.2;
+	for (double r = left; r < 3.5; r += step) {
+		vector<int> count(n + 1);
+		vector<double> lb, rb;
+		//int r = 2;
+		for (int i = 0; i < m; i++) {
+			GSA_func_Hill::testHill[i]->GetBounds(lb, rb);
+			GSA_func_Hill tmp(r, 1e-3, lb[0], rb[0], i);
+			int result = tmp.calculate_minimum(n, GSA_func_Hill::testHill[i]->GetOptimumPoint()[0], 1e-3);
+			if (result >= 0) {
+				count[result]++;
+			}
+		}
+		for (int i = 1; i <= n; i++)
+			count[i] += count[i - 1];
+		mem.push_back(count);
+	}
+	for (int i = 0; i < mem.size(); i++) {
+		cout << "R = " << left+i*step <<"\t\t\t";
+	}
+	cout << endl;
+	for(int i=0;i<n;i++){
+		for (int j = 0; j < mem.size(); j++) {
+			string e = to_string((double)mem[j][min(i,n)] / m);
+			for (auto& x : e) {
+				if (x == '.')
+					x = ',';
+			}
+			cout << i << "\t" << e << "\t\t";
+		}
+		cout << endl;
+	}
+
 
 }
