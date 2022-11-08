@@ -5,6 +5,13 @@
 #include <list>
 #include <iterator>
 
+
+#include "../sample_src/Hill/HillProblem.hpp"
+#include "../sample_src/Hill/HillProblemFamily.hpp"
+#include "../sample_src/Shekel/ShekelProblem.hpp"
+#include "../sample_src/Shekel/ShekelProblemFamily.hpp"
+
+
 using namespace std;
 
 struct tpoint {
@@ -164,8 +171,22 @@ int main()
 {	
 	//GSA(long double _parametr = 2, long double _errorX = 0.001, long double leftborder = 0, long double rightborder = 1)
 	GSA tmp(2, 0.001, -1.2, 2.0);
+	THillProblemFamily testHill; 
+	int n = 10;
+	for (int i = 0; i < n; i++)
+		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
+		testHill[i]->GetOptimumValue() << std::endl;
+	for (int i = 0; i < n; i++)
+		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
+		testHill[i]->GetMaxValue() << std::endl;
+	for (int i = 0; i < n; i++)
+		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
+		testHill[i]->GetOptimumPoint()[0] << std::endl;
+	for (int i = 0; i < n; i++)
+		cout << "HillProblem [" << i << "] (" << 0.5 + double(i) / 2000.0 << ") = " <<
+		testHill[i]->ComputeFunction(testHill[i]->GetMaxPoint()) << std::endl;
 	long double Xmin = 0;
 	long double error = 0.001;
-	cout << tmp.calculate_minimum(300,Xmin,error)<<"\n";
+	//cout << tmp.calculate_minimum(300,Xmin,error)<<"\n";
 
 }
