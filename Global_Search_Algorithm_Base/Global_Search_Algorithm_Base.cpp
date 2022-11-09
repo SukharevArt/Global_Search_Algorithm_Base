@@ -72,12 +72,12 @@ public:
 			test_point(new_pos, interval);
 		}
 		
-		if (abs(result.X - Xmin) >= error) {
+		if (abs(result.X - Xmin) >= error * (borders.second - borders.first)) {
 			return -1;
 		}
 		int num = -1;
 		for (int i = 0; i < size; i++) {
-			if (abs(memory_points[i].X - Xmin) < error) {
+			if (abs(memory_points[i].X - Xmin) < error*(borders.second-borders.first)) {
 				num = i + 1;
 				break;
 			}
@@ -217,6 +217,7 @@ int main()
 	vector<vector<int >> mem;
 	double step=0.3;
 	double left = 1.2;
+
 	for (double r = left; r < 3.5; r += step) {
 		vector<int> count(n + 1);
 		vector<double> lb, rb;
@@ -240,6 +241,40 @@ int main()
 	for(int i=0;i<n;i++){
 		for (int j = 0; j < mem.size(); j++) {
 			string e = to_string((double)mem[j][min(i,n)] / m);
+			for (auto& x : e) {
+				if (x == '.')
+					x = ',';
+			}
+			cout << i << "\t" << e << "\t\t";
+		}
+		cout << endl;
+	}
+	cout << endl;
+	mem.clear();
+
+	for (double r = left; r < 3.5; r += step) {
+		vector<int> count(n + 1);
+		vector<double> lb, rb;
+		//int r = 2;
+		for (int i = 0; i < m; i++) {
+			GSA_func_Shekel::testShekel[i]->GetBounds(lb, rb);
+			GSA_func_Shekel tmp(r, 1e-3, lb[0], rb[0], i);
+			int result = tmp.calculate_minimum(n, GSA_func_Shekel::testShekel[i]->GetOptimumPoint()[0], 1e-3);
+			if (result >= 0) {
+				count[result]++;
+			}
+		}
+		for (int i = 1; i <= n; i++)
+			count[i] += count[i - 1];
+		mem.push_back(count);
+	}
+	for (int i = 0; i < mem.size(); i++) {
+		cout << "R = " << left + i * step << "\t\t\t";
+	}
+	cout << endl;
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < mem.size(); j++) {
+			string e = to_string((double)mem[j][min(i, n)] / m);
 			for (auto& x : e) {
 				if (x == '.')
 					x = ',';
