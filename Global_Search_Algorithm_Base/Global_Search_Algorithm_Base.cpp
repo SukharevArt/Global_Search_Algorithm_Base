@@ -17,9 +17,9 @@ struct tpoint {
 		return X < a.X;
 	}
 	friend ostream& operator<<(ostream& fout, const tpoint& tmp) {
-		fout << "X =";
+		fout << " X = ";
 		for (auto u : tmp.X)
-			cout << u << " ";
+			cout << u << ", ";
 		cout<<" Y =" << tmp.Y;
 		return fout;
 	}
@@ -71,11 +71,13 @@ public:
 			long double new_pos = calculate_position_of_point(interval, value);
 			test_point(new_pos, interval);
 		}
-		cout << "number of operations : " << number_of_tests << ", result = " << result << "\n";
+		if (tmp_dim == 0){
+			cout << "number of operations : " << number_of_tests << ", result : " << result << "\n";
+			cout << endl;
+		}
 		/*numeration_and_sort();
 		for (auto x : points)
 			cout << "X=" << x.X << ", Y=" << x.Y << "\n";*/
-		cout << endl;
 		return result;
 	}
 
@@ -171,10 +173,20 @@ private:
 int main()
 {	
 	//GSA(long double _parametr = 2, long double _errorX = 0.001, long double leftborder = 0, long double rightborder = 1)
-	//return 3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x);
-	//return x * sin(x * 2 + 2) - cos(2 * x);
-	//return sin(x * 20 + 2) / x - 5 * x * cos(3 * x + 10);
-	GSA tmp([](vector<long double> a) {long double x = a[0]; return  3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x); }, 2, 0.001, { -1.2 }, { 2.0 },1);
+	/*long double (*func)(vector<long double>) = [](vector<long double> a) {
+			long double x = a[0]; 
+			return  3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x); 
+	};
+	GSA tmp(func, 2, 0.001, { -1.2 }, { 2.0 },1);
+	*///////
+	long double (*func)(vector<long double>) = [](vector<long double> a) {
+			long double x = a[0]; 
+			long double y = a[1]; 
+			//return  (x+0.5) * (x+0.5) + (y - 0.4) * (y - 0.4);
+			return sin(x) + cos(y);
+	};
+	GSA tmp(func, 2, 0.001, { -4 , -4 }, { 4 , 4 }, 2);
+	
 	cout << tmp.calculate_minimum()<<"\n";
 
 }
