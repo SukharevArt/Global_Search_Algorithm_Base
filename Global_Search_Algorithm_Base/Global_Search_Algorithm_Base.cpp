@@ -4,8 +4,11 @@
 #include <algorithm>
 #include <list>
 #include <iterator>
+#include <fstream>
 
 using namespace std;
+
+ofstream fout("points.txt");
 
 struct tpoint {
 	vector<long double> X;
@@ -74,6 +77,13 @@ public:
 		if (tmp_dim == 0){
 			cout << "number of operations : " << number_of_tests << ", result : " << result << "\n";
 			cout << endl;
+		}
+		if (tmp_dim == 0) {
+			for (auto z : memory_points) {
+				for (auto w : z.X)
+					fout << w << " ";
+				fout << z.Y << "\n";
+			}
 		}
 		/*numeration_and_sort();
 		for (auto x : points)
@@ -177,15 +187,15 @@ int main()
 			long double x = a[0]; 
 			return  3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x); 
 	};
-	GSA tmp(func, 2, 0.001, { -1.2 }, { 2.0 },1);
-	*///////
+	GSA tmp(func, 2, 0.001, { -1.2 }, { 2.0 },1);*/
+	//////
 	long double (*func)(vector<long double>) = [](vector<long double> a) {
 			long double x = a[0]; 
 			long double y = a[1]; 
 			//return  (x+0.5) * (x+0.5) + (y - 0.4) * (y - 0.4);
-			return sin(x) + cos(y);
+			return sin(x+0.4*y)*(y-3) + cos(y-0.2*x)*x;
 	};
-	GSA tmp(func, 2, 0.001, { -4 , -4 }, { 4 , 4 }, 2);
+	GSA tmp(func, 2, 0.001, { -10 , -10 }, { 10 , 10 }, 2);
 	
 	cout << tmp.calculate_minimum()<<"\n";
 
