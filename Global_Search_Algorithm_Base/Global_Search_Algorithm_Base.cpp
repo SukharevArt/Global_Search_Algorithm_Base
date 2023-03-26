@@ -50,11 +50,14 @@ public:
 	tpoint function(tpoint a) {
 		if (tmp_dim + 1 == dimension) {
 			a.Y = func(a.X);
+			number_of_tests++;
 			return a;
 		}
 		else {
 			GSA tmpP(func,parametr,errorX,borders.first,borders.second,dimension,tmp_dim+1,a);
-			return tmpP.calculate_minimum();
+			tpoint res = tmpP.calculate_minimum();
+			number_of_tests += tmpP.number_of_tests;
+			return res;
 		}
 	}
 
@@ -62,7 +65,7 @@ public:
 		result.Y = UINT64_MAX;
 		number_of_tests = 0;
 		base_calculates();
-		for (; number_of_tests < count_of_tests; ) {
+		for (int i = 2; i < count_of_tests; i++) {
 			numeration_and_sort();
 			long double value = calculate_expected_const();
 			calculate_haracteristecs(value);
@@ -78,7 +81,7 @@ public:
 			cout << "number of operations : " << number_of_tests << ", result : " << result << "\n";
 			cout << endl;
 		}
-		if (tmp_dim == 0) {
+		if (tmp_dim == dimension-1) {
 			for (auto z : memory_points) {
 				for (auto w : z.X)
 					fout << w << " ";
@@ -106,7 +109,6 @@ private:
 		tpoint Y = function(other);
 		other.X.pop_back();
 		size++;
-		number_of_tests++;
 		if(result.Y>Y.Y)
 			result = Y;
 		//cout << "test: X = " << X << ", Y = " << Y << "\n";
@@ -192,10 +194,10 @@ int main()
 	long double (*func)(vector<long double>) = [](vector<long double> a) {
 			long double x = a[0]; 
 			long double y = a[1]; 
-			//return  (x+0.5) * (x+0.5) + (y - 0.4) * (y - 0.4);
-			return sin(x+0.4*y)*(y-3) + cos(y-0.2*x)*x;
+			return  sin(x + 0.4*y) + cos(y);
+			//return sin(x+0.4*y)*(y-3) + cos(y-0.2*x)*x;
 	};
-	GSA tmp(func, 2, 0.001, { -10 , -10 }, { 10 , 10 }, 2);
+	GSA tmp(func, 2, 0.001, { -5 , -5 }, { 5 , 5 }, 2);
 	
 	cout << tmp.calculate_minimum()<<"\n";
 
