@@ -9,8 +9,9 @@ def make_data():
     y = np.arange(-5, 5, 0.01)
     x, y = np.meshgrid(x, y)
 
-    # z = (np.sin(x+0.4*y)*(y-3)+np.cos(y-0.2*x)*x)
-    z = (np.sin(x+0.4*y)+np.cos(y))
+    z = (np.sin(x+0.4*y)*(y-3)+np.cos(y-0.2*x)*x)
+    # z = (np.sin(x+0.4*y)+np.cos(y))
+    # z = (x+1) * (x+1) + (y-2) * (y-2)
     return x, y, z
 
 
