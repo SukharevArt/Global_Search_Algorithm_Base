@@ -39,7 +39,7 @@ struct tpoint {
 	}
 };
 
-class GSA
+class GSA_mul_dim_P
 {
 protected:
 	vector < tpoint > memory_points;
@@ -92,25 +92,10 @@ public:
 			double  new_pos = calculate_position_of_point(interval, value);
 			test_point(new_pos, interval);
 		}
-		/*if (tmp_dim == 0){
-			cout << "number of operations : " << number_of_tests << ", result : " << result << "\n";
-			cout << endl;
-		}*/
-		/*if (tmp_dim == dimension-1) {
-			for (auto z : memory_points) {
-				for (auto w : z.X)
-					fout << w << " ";
-				fout << z.Y << "\n";
-			}
-		}
-		*/
-		//numeration_and_sort();
-		//for (auto x : points)
-			//cout << x << "\n";
 		return result;
 	}
 
-	GSA(double  (*_func)(vector<double >),double  _parametr = 2, double  _errorX = 0.001, vector<double > leftborder = {0, 0}
+	GSA_mul_dim_P(double  (*_func)(vector<double >),double  _parametr = 2, double  _errorX = 0.001, vector<double > leftborder = {0, 0}
 		, vector<double > rightborder = { 1, 1 })
 		:parametr(_parametr), errorX(_errorX), borders({ leftborder,rightborder }), result({},0), Evolvent(2,10){
 		func = _func;
@@ -129,9 +114,7 @@ private:
 			Evolvent.GetImage (Y.X[0], b.data ());
 			result = tpoint (b,Y.Y);
 		}
-		//cout << "test: X = " << X << ", Y = " << Y << "\n";
 		points.insert(nxt, Y);
-		
 	}
 
 	void base_calculates() {
@@ -155,10 +138,6 @@ private:
 			value = max(value,
 			abs((nxt.Y - tmp.Y) / sqrt(nxt.X[0] - tmp.X[0])));
 		}
-		if (value == 0) 
-			value = 1;
-		else
-			value *= parametr;
 		return value;
 	}
 	
@@ -177,7 +156,7 @@ private:
 			double  diffX = sqrt(nxt.X[0] - tmp.X[0]);
 			double  diffY = nxt.Y-tmp.Y;
 			double  sumY = nxt.Y+tmp.Y;
-			double  R = value *	diffX+diffY*diffY/(value*diffX)-2*(sumY);
+			double  R = parametr * value * diffX+diffY*diffY/(parametr*value*diffX)-2*(sumY);
 			characteristics[i] = R;
 		}
 	}
@@ -199,7 +178,7 @@ private:
 	double  calculate_position_of_point(list<tpoint>::iterator interval,double  value) {
 		list<tpoint>::iterator prev = std::prev(interval);
 		return ((*interval).X[0] + (*prev).X[0]) / 2 -
-			((*interval).Y - (*prev).Y)* (( *interval ).Y - ( *prev ).Y)*parametr / (2 * value * value);
+			((*interval).Y - (*prev).Y)* (( *interval ).Y - ( *prev ).Y)/ (2 * parametr * value * value);
 	}
 	
 };
@@ -213,21 +192,21 @@ bool check(vector<double> a, vector<double> b,double errorD=1e-3) {
 }
 int main()
 {	
-	//GSA(double  _parametr = 2, double  _errorX = 0.001, double  leftborder = 0, double  rightborder = 1)
+	//GSA_mul_dim_P(double  _parametr = 2, double  _errorX = 0.001, double  leftborder = 0, double  rightborder = 1)
 	/*double  (*func)(vector<double >) = [](vector<double > a) {
 			double  x = a[0]; 
 			return  3 * sin(-x * 2) - x * cos(2 * x) - 2 * sin(5 * x); 
 	};
-	GSA tmp(func, 2, 0.001, { -1.2 }, { 2.0 },1);*/
+	GSA_mul_dim_P tmp(func, 2, 0.001, { -1.2 }, { 2.0 },1);*/
 	////
 	double  (*func)(vector<double >) = [](vector<double > a) {
 			double  x = a[0]; 
 			double  y = a[1];
 			//return (x+1) * (x+1) + (y-2) * (y-2);
-			//return  sin(x + 0.4*y) + cos(y);
-			return sin(x+0.4*y)*(y-3) + cos(y-0.2*x)*x;
+			return  sin(x + 0.4*y) + cos(y);
+			//return sin(x+0.4*y)*(y-3) + cos(y-0.2*x)*x;
 	};
-	GSA tmp(func, 2.55, 0.005, { -5 , -5 }, { 5 , 5 });
+	GSA_mul_dim_P tmp(func, 2.55, 0.005, { -5 , -5 }, { 5 , 5 });
 	cout << tmp.calculate_minimum()<<"\n";
 	cout << tmp.getMP ().size () << "\n";
 	
@@ -254,7 +233,7 @@ int main()
 	//		double  (*func)(vector<double >) = [](vector<double > a)->double {
 	//			return testGrishgin[tmpTest]->ComputeFunction(a);
 	//		};
-	//		GSA tmp(func, r, 1e-3, lb, rb);
+	//		GSA_mul_dim_P tmp(func, r, 1e-3, lb, rb);
 	//		tpoint res = tmp.calculate_minimum();
 	//		//cout << res << endl;
 	//		vector < tpoint > MP = tmp.getMP();
