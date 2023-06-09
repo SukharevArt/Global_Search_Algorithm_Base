@@ -177,7 +177,7 @@ private:
 			double  diffX = sqrt(nxt.X[0] - tmp.X[0]);
 			double  diffY = nxt.Y-tmp.Y;
 			double  sumY = nxt.Y+tmp.Y;
-			double  R = value *	diffX+diffY*diffY/(value*diffX)-2*(sumY-2*mn);
+			double  R = value *	diffX+diffY*diffY/(value*diffX)-2*(sumY);
 			characteristics[i] = R;
 		}
 	}
