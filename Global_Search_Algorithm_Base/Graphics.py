@@ -5,8 +5,8 @@ import numpy as np
 
 
 def make_data():
-    x = np.arange(-5, 5, 0.01)
-    y = np.arange(-5, 5, 0.01)
+    x = np.arange(-10, 10, 0.01)
+    y = np.arange(-10, 10, 0.01)
     x, y = np.meshgrid(x, y)
 
     z = (np.sin(x+0.4*y)*(y-3)+np.cos(y-0.2*x)*x)

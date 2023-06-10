@@ -199,77 +199,77 @@ int main()
 	};
 	GSA_mul_dim_P tmp(func, 2, 0.001, { -1.2 }, { 2.0 },1);*/
 	////
-	double  (*func)(vector<double >) = [](vector<double > a) {
-			double  x = a[0]; 
-			double  y = a[1];
-			//return (x+1) * (x+1) + (y-2) * (y-2);
-			return  sin(x + 0.4*y) + cos(y);
-			//return sin(x+0.4*y)*(y-3) + cos(y-0.2*x)*x;
-	};
-	GSA_mul_dim_P tmp(func, 2.55, 0.005, { -5 , -5 }, { 5 , 5 });
-	cout << tmp.calculate_minimum()<<"\n";
-	cout << tmp.getMP ().size () << "\n";
+	//double  (*func)(vector<double >) = [](vector<double > a) {
+	//		double  x = a[0]; 
+	//		double  y = a[1];
+	//		//return (x+1) * (x+1) + (y-2) * (y-2);
+	//		//return  sin(x + 0.4*y) + cos(y);
+	//		return sin(x+0.4*y)*(y-3) + cos(y-0.2*x)*x;
+	//};
+	//GSA_mul_dim_P tmp(func, 2.55, 0.005, { -10 , -10 }, { 10 , 10	 });
+	//cout << tmp.calculate_minimum()<<"\n";
+	//cout << tmp.getMP ().size () << "\n";
 	
-	//double errorD = 1e-3;
-	//vector<double > lb, rb;
+	double errorD = 1e-3;
+	vector<double > lb, rb;
 
-	//freopen("result.xls", "w", stdout);
-	//ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
-	//int n = 200;
-	//int m = 100;
-	//int N = (n + 1) * (n + 1)/10;
-	//vector<vector<int >> mem;
-	//double step = 0.3;
-	//double left = 1.1;
+	freopen("result.xls", "w", stdout);
+	ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+	int n = 200;
+	int m = 100;
+	int N = (n + 1) * (n + 1)/10;
+	vector<vector<int >> mem;
+	double step = 0.3;
+	double left = 1.1;
 
-	//for (double r = left; r < 3.2; r += step) {
-	//	vector<int> count(N);
-	//	vector<double> lb, rb;
-	//	//int r = 2;
-	//	for (int i = 0; i < m; i++) {
-	//		tmpTest = i;
-	//		testGrishgin[tmpTest]->GetBounds(lb, rb);
-	//		//cout << testGrishgin[tmpTest]->GetOptimumValue() << endl;
-	//		double  (*func)(vector<double >) = [](vector<double > a)->double {
-	//			return testGrishgin[tmpTest]->ComputeFunction(a);
-	//		};
-	//		GSA_mul_dim_P tmp(func, r, 1e-3, lb, rb);
-	//		tpoint res = tmp.calculate_minimum();
-	//		//cout << res << endl;
-	//		vector < tpoint > MP = tmp.getMP();
-	//		vector<double> a = testGrishgin[tmpTest]->GetOptimumPoint();
-	//		vector<double> b = res.X;
-	//		if (!check(a, b, errorD)) {
-	//			//cout << -1 << "\n";
-	//		}
-	//		else 
-	//			for (int i = 0; i < MP.size(); i++) {
-	//				if (check(a, MP[i].X, errorD)) {
-	//					//cout << i + 1 << endl;
-	//					count[min(i + 1,N-1)]++;
-	//					break;
-	//				}
-	//			}
-	//	}
-	//	for (int i = 1; i < N; i++)
-	//		count[i] += count[i - 1];
-	//	mem.push_back(count);
-	//}
-	//for (int i = 0; i < mem.size(); i++) {
-	//	cout << "R = " << left + i * step << "\t\t\t";
-	//}
-	//cout << endl;
-	//for (int i = 0; i < N; i++) {
-	//	for (int j = 0; j < mem.size(); j++) {
-	//		string e = to_string((double)mem[j][min(i, N)] / m);
-	//		for (auto& x : e) {
-	//			if (x == '.')
-	//				x = ',';
-	//		}
-	//		cout << i << "\t" << e << "\t\t";
-	//	}
-	//	cout << endl;
-	//}
-	//cout << endl;
+	for (double r = left; r < 3.2; r += step) {
+		vector<int> count(N);
+		vector<double> lb, rb;
+		//int r = 2;
+		for (int i = 0; i < m; i++) {
+			tmpTest = i;
+			testGrishgin[tmpTest]->GetBounds(lb, rb);
+			//cout << testGrishgin[tmpTest]->GetOptimumValue() << endl;
+			double  (*func)(vector<double >) = [](vector<double > a)->double {
+				return testGrishgin[tmpTest]->ComputeFunction(a);
+			};
+			GSA_mul_dim_P tmp(func, r, 1e-3, lb, rb);
+			tpoint res = tmp.calculate_minimum();
+			//cout << res << endl;
+			vector < tpoint > MP = tmp.getMP();
+			vector<double> a = testGrishgin[tmpTest]->GetOptimumPoint();
+			vector<double> b = res.X;
+			if (!check(a, b, errorD)) {
+				//cout << -1 << "\n";
+			}
+			else 
+				for (int i = 0; i < MP.size(); i++) {
+					if (check(a, MP[i].X, errorD)) {
+						//cout << i + 1 << endl;
+						count[min(i + 1,N-1)]++;
+						break;
+					}
+				}
+		}
+		for (int i = 1; i < N; i++)
+			count[i] += count[i - 1];
+		mem.push_back(count);
+	}
+	for (int i = 0; i < mem.size(); i++) {
+		cout << "R = " << left + i * step << "\t\t\t";
+	}
+	cout << endl;
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < mem.size(); j++) {
+			string e = to_string((double)mem[j][min(i, N)] / m);
+			for (auto& x : e) {
+				if (x == '.')
+					x = ',';
+			}
+			cout << i << "\t" << e << "\t\t";
+		}
+		cout << endl;
+	}
+	cout << endl;
 
 }
